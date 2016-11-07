@@ -22,21 +22,20 @@ func (p *port) Open(c *Config) (err error) {
 	if err != nil {
 		return
 	}
+	var timeouts c_COMMTIMEOUTS
 	// Read and write timeout
 	if c.Timeout > 0 {
 		timeout := toDWORD(int(c.Timeout.Nanoseconds() / 1E6))
-		var timeouts c_COMMTIMEOUTS
 		// wait until a byte arrived or time out
 		timeouts.ReadIntervalTimeout = c_MAXDWORD
 		timeouts.ReadTotalTimeoutMultiplier = c_MAXDWORD
 		timeouts.ReadTotalTimeoutConstant = timeout
-		timeouts.WriteTotalTimeoutMultiplier = 0
 		timeouts.WriteTotalTimeoutConstant = timeout
-		err = SetCommTimeouts(handle, &timeouts)
-		if err != nil {
-			syscall.CloseHandle(handle)
-			return
-		}
+	}
+	err = SetCommTimeouts(handle, &timeouts)
+	if err != nil {
+		syscall.CloseHandle(handle)
+		return
 	}
 	p.handle = handle
 	return
